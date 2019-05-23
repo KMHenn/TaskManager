@@ -1,0 +1,131 @@
+<!--
+    HW 4: Task Manager
+    Kaitlyn Hennessy
+    kmh319
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
+        <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+        <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+        <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+        <meta charset="utf-8">
+        <title>Task Manager</title>
+        <style>
+            body{
+                font-family: 'Open Sans', sans-serif;
+                padding: 20px, 20px, 20px, 20px;
+            }
+
+            div{
+                margin: 10px 10px 10px 10px;
+            }
+
+            table, td, tr{
+                table-layout: fixed;
+            }
+
+            table{
+                border: 5px;
+                border-style: solid;
+            }
+
+            td{
+                border: 2px;
+                border-style: solid;
+                padding: 5px 10px 5px 10px;
+                text-align: center;
+                height: 20px;
+            }
+
+            #left{
+                float: left;
+            }
+
+            #right{
+                float: left;
+                margin-left: 20px;
+            }
+        </style>
+        <script>
+            $(document).ready(function(){
+                $("#date").datepicker();
+
+                // Handle deleting checked rows
+                $("#del_btn").click(function () {
+                    let checkedIDs = $("input:checked").each((index, obj)=>obj.id);
+                    let idString = "";
+                    for (let i = 0; i < checkedIDs.length; i++){
+                        idString += checkedIDs.get(i).id.substring(5);
+                        if ((i) != checkedIDs.length - 1)
+                            idString += ",";
+                    }
+                    
+                    // Make sure user intends deletion
+                    if(confirm("Delete " + checkedIDs.length + " task(s)?")){
+                        $.ajax({
+                            url: '/deleteTasks',
+                            contentType: "application/json",
+                            data: JSON.stringify({ idList: idString }),
+                            dataType: 'json',
+                            type: 'POST',
+                            processData: false,
+                            success: function (result) {
+                                // $("#tasks").replaceWith(result);
+                                console.log("Deleted");
+                            }  
+                        })
+                    }
+                })
+            })
+        </script>
+    </head>
+
+    <body>
+        <h2>Task Manager</h2>
+        
+        <!-- Table -->
+        <div id="left">
+            <table id="taskMng">
+                <thead>
+                    <tr>
+                        <td style="width: 20px;"></td>
+                        <td style="width: 150px;">Task</td>
+                        <td style="width: 150px;">Type</td>
+                        <td style="width: 80px;">Due Date</td>
+                    </tr>
+                <tbody id="tasks">
+                    
+                </tbody>
+                <%- taskRecord -%>
+            </table>
+        </div>
+
+        <!-- Adding and deleting from the table-->
+        <div id="right">
+            <form action="/addTask" method="post">
+                <div id="buttons">
+                    <input type="submit" value="Add"/>
+                    <a href=""><input type="button" id="del_btn" name="del_btn" value="Delete"/></a>
+                </div>
+                <div id="descripDiv">
+                    Description: <input type="text" id="task" name="task" required/>
+                </div>
+                <div id="dateDiv">
+                    Date: <input type="text" id="date" name="datedue" required/>
+                </div>
+                <div id="typeDiv">
+                    Type: <select name="type" required>
+                        <option value="Next Action">Next Action</option>
+                        <option value="Waiting">Waiting</option>
+                        <option value="Talk">Talk</option>
+                        <option value="Future">Future</option>
+                        <option value="Someday/Maybe">Someday/Maybe</option>
+                    </select>
+                </div>
+            </form>
+        </div>
+    </body>
+</html>
